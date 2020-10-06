@@ -14,6 +14,12 @@ double AlgFuncDer(double x) {
   return y;
 }
 
+double AlgFunc2Der(double x) {
+    //¬ычисл€ет значение первой производной алгебраической функции
+    double y = 12 * pow(x, 2) - 10;
+    return y;
+}
+
 
 double TranscFunc(double x) {
   //f(x) = x^2 - 5*sin(x) + 2
@@ -27,25 +33,35 @@ double TranscFuncDer(double x) {
   return y;
 }
 
+double TranscFunc2Der(double x) {
+    //f(x) = 2x - 5*cos(x)
+    double y = 2 + 5 * sin(x);
+    return y;
+}
+
 double BisMeth(double(*Func)(double), double a, double b, int *iterCount, double eps) {
   //‘ункци€ ищет корень на участке a b с помощью метода половинного делени€ и возвращает его
-  double c = 0;
+  double c = 0, funcA = 0, funcC = 0;
+  
   (*iterCount) = 0;
 
   //ѕроверка условий
-  if (Func(a)*Func(b) >= 0) {
+  funcA = Func(a);
+  if (funcA * Func(b) >= 0) {
     *iterCount = -1;
     return 0;
   }
-//не считать 2 раза Func(a)
+
   while (fabs(b - a) > 2 * eps) {
     c = (a + b) / 2;
+    funcC = Func(c);
 
-    if (Func(a)*Func(c) < 0)
-      b = c;
-    else
-      a = c;
-
+    if (funcA * funcC < 0)
+        b = c;
+    else {
+        funcA = funcC;
+        a = c;
+    }
     (*iterCount)++;
   }
 
@@ -53,7 +69,7 @@ double BisMeth(double(*Func)(double), double a, double b, int *iterCount, double
 }
 
 
-double NewtMeth(double(*Func)(double), double(*FuncDer)(double), 
+double NewtMeth(double(*Func)(double), double(*FuncDer)(double), double(*Func2Der)(double),
                 double a, double b, int *iterCount, double eps) {
   double x0 = 0, x1 = 0;
   (*iterCount) = 0;
@@ -63,10 +79,16 @@ double NewtMeth(double(*Func)(double), double(*FuncDer)(double),
     *iterCount = -1;
     return 0;
   }
-  x0 = b;
+  
+  // дл€ выбора начальной точки провер€ем f(x0)*d2f(x0)>0 
+  if (Func(a) * Func2Der(a) > 0)
+      x0 = a; 
+  else
+      x0 = b;
+    
   x1 = x0 - Func(x0) / FuncDer(x0);
   (*iterCount)++;
-  //выбирать стартовую точку из правила
+
   while (fabs(x1 - x0) > eps) {
     x0 = x1;
     x1 = x0 - Func(x0) / FuncDer(x0);
